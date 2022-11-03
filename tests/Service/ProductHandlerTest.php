@@ -59,10 +59,50 @@ class ProductHandlerTest extends TestCase
     {
         $totalPrice = 0;
         foreach ($this->products as $product) {
-            $price = $product['price'] ?: 0;
+            $price = $product['price'] ?? 0;
             $totalPrice += $price;
         }
 
-        $this->assertEquals(143, $totalPrice);
+        $productHandler = new ProductHandler;
+        $this->assertEquals($productHandler->getTotalPrice($this->products), $totalPrice);
+    }
+
+   public function testGetTypeIsDessert()
+    {
+        $ret = [];
+        $pro = $this->products;
+
+        foreach ($pro as $k => $product) {
+           if (strtolower($product['type']) == 'dessert') {
+                $ret[] = $product;
+           }
+        }
+
+        $productHandler = new ProductHandler;
+        $dessert        = $productHandler->getTypeIsDessert($pro);
+
+        sort($ret);
+        sort($dessert);
+        $this->assertJsonStringEqualsJsonString(json_encode($ret), json_encode($dessert));
+    }
+
+    public function testConvertDateToUnixTime()
+    {
+        $time = [];
+        $pro  = $this->products;
+        foreach ($pro as $k => $product) {
+            if (!isset($product['create_at'])
+                || strtotime($product['create_at']) == false
+            ) {
+                continue;
+            }
+
+            $pro[$k]['create_at'] = strtotime($product['create_at']);
+        }
+
+        $productHandler = new ProductHandler;
+        $products       = $productHandler->convertDateToUnixTime($this->products);
+
+        $this->assertJsonStringEqualsJsonString(json_encode($pro), json_encode($products));
     }
 }
